@@ -1,41 +1,48 @@
-import type { DcaInput, DcaResult } from './types';
+import type { AdditionalLot, DcaInput, DcaResult } from './types';
 
-const isValidNumber = (value: number | null): value is number =>
-  value !== null && Number.isFinite(value) && value >= 0;
+const isPositiveNumber = (value: number | null): value is number =>
+  value !== null && Number.isFinite(value) && value > 0;
+
+const sumLots = (lots: AdditionalLot[]) => {
+  return lots.reduce(
+    (acc, lot) => {
+      if (!isPositiveNumber(lot.price) || !isPositiveNumber(lot.quantity)) return acc;
+      const cost = lot.price * lot.quantity;
+      return {
+        quantity: acc.quantity + lot.quantity,
+        cost: acc.cost + cost,
+      };
+    },
+    { quantity: 0, cost: 0 }
+  );
+};
 
 export const calculateDca = (input: DcaInput): DcaResult | null => {
-  const { currentAvgPrice, currentQuantity, marketPrice, targetAvgPrice } = input;
+  const { currentAvgPrice, currentQuantity, additionalLots } = input;
 
-  if (
-    !isValidNumber(currentAvgPrice) ||
-    !isValidNumber(currentQuantity) ||
-    !isValidNumber(marketPrice) ||
-    !isValidNumber(targetAvgPrice)
-  ) {
+  if (!isPositiveNumber(currentAvgPrice) || !isPositiveNumber(currentQuantity)) {
     return null;
   }
 
   const currentTotalCost = currentAvgPrice * currentQuantity;
-  const denominator = targetAvgPrice - marketPrice;
+  const { cost: additionalTotalCost, quantity: additionalQuantity } = sumLots(additionalLots);
 
-  if (denominator === 0) {
+  if (additionalQuantity <= 0 || additionalTotalCost <= 0) {
     return null;
   }
 
-  const numerator = currentTotalCost - targetAvgPrice * currentQuantity;
-  const additionalQuantity = numerator / denominator;
-
-  if (!Number.isFinite(additionalQuantity) || additionalQuantity <= 0 || denominator <= 0) {
-    return null;
-  }
-
-  const additionalCost = additionalQuantity * marketPrice;
-  const resultingAvgPrice =
-    (currentTotalCost + additionalCost) / (currentQuantity + additionalQuantity);
+  const finalQuantity = currentQuantity + additionalQuantity;
+  const finalAvgPrice = (currentTotalCost + additionalTotalCost) / finalQuantity;
+  const additionalAvgPrice = additionalTotalCost / additionalQuantity;
+  const additionalReturn = (additionalAvgPrice - finalAvgPrice) / finalAvgPrice;
 
   return {
+    finalAvgPrice,
+    finalQuantity,
+    currentTotalCost,
+    additionalTotalCost,
     additionalQuantity,
-    additionalCost,
-    resultingAvgPrice,
+    additionalAvgPrice,
+    additionalReturn,
   };
 };

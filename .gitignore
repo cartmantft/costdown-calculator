@@ -15,6 +15,7 @@ dist-ssr
 *.ait
 .env
 .env.*
+!.env.example
 *.local
 /.cache
 /tmp

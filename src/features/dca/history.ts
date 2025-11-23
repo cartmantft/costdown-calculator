@@ -5,11 +5,23 @@ import type { DcaHistoryItem, DcaInput, DcaResult } from './types';
 const STORAGE_KEY = 'dca-history';
 const HISTORY_LIMIT = appConfig.historyLimit ?? 10;
 
+const isValidNumber = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
+
+const isValidHistoryItem = (item: DcaHistoryItem): boolean => {
+  if (!item?.result) return false;
+  return (
+    isValidNumber(item.result.finalAvgPrice) &&
+    isValidNumber(item.result.finalQuantity) &&
+    isValidNumber(item.result.additionalReturn)
+  );
+};
+
 const parseHistory = (raw: string | null): DcaHistoryItem[] => {
   if (!raw) return [];
   try {
     const parsed = JSON.parse(raw) as DcaHistoryItem[];
-    return Array.isArray(parsed) ? parsed : [];
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(isValidHistoryItem);
   } catch {
     return [];
   }
@@ -34,6 +46,12 @@ const createEntry = (input: DcaInput, result: DcaResult): DcaHistoryItem => ({
 export const addHistory = (input: DcaInput, result: DcaResult | null): DcaHistoryItem[] => {
   if (!result) return loadHistory();
   const next = [createEntry(input, result), ...loadHistory()].slice(0, HISTORY_LIMIT);
+  persistHistory(next);
+  return next;
+};
+
+export const removeHistory = (id: string): DcaHistoryItem[] => {
+  const next = loadHistory().filter((item) => item.id !== id);
   persistHistory(next);
   return next;
 };

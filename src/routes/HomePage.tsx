@@ -1,35 +1,85 @@
+import { useState } from 'react';
 import DcaForm from '../components/dca/DcaForm';
 import DcaHistoryList from '../components/dca/DcaHistoryList';
 import DcaResult from '../components/dca/DcaResult';
 import { useDcaCalculator } from '../features/dca/hooks';
 
+type View = 'list' | 'detail';
+
 const HomePage = () => {
-  const { input, result, history, updateInput, calculate, reset } = useDcaCalculator();
+  const [view, setView] = useState<View>('list');
+  const {
+    input,
+    result,
+    history,
+    updateInput,
+    updateLot,
+    addLot,
+    removeLot,
+    reset,
+    openFromHistory,
+    save,
+    deleteEntry,
+  } = useDcaCalculator();
+
+  const openDetail = (id?: string) => {
+    if (id) openFromHistory(id);
+    setView('detail');
+  };
+
+  const saveAndBack = () => {
+    const next = save();
+    if (next?.ok) {
+      setView('list');
+    }
+  };
+
+  if (view === 'list') {
+    return (
+      <div className="single-column">
+        <header className="list-header">
+          <div className="list-header-copy">
+            <h2>코스트다운 계산기</h2>
+          </div>
+          <button type="button" className="btn primary list-header-action" onClick={() => openDetail()}>
+            새 계산
+          </button>
+        </header>
+        <DcaHistoryList
+          history={history}
+          onSelect={(id) => openDetail(id)}
+          onDelete={(id) => deleteEntry(id)}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="page-grid">
       <section className="card">
-        <div className="card-header">
-          <h2>입력</h2>
-          <p>현재 평균단가, 보유수량, 시장가, 목표 평균단가를 입력하세요.</p>
+        <div className="card-header card-header-plain">
+          <button type="button" className="btn ghost" onClick={() => setView('list')}>
+            목록으로
+          </button>
         </div>
-        <DcaForm input={input} onChange={updateInput} onSubmit={calculate} onReset={reset} />
+        <DcaForm
+          input={input}
+          onChange={updateInput}
+          onChangeLot={updateLot}
+          onAddLot={addLot}
+          onRemoveLot={removeLot}
+          onSave={saveAndBack}
+          onReset={reset}
+          canSave={Boolean(result)}
+        />
       </section>
 
       <section className="card">
         <div className="card-header">
           <h2>계산 결과</h2>
-          <p>추가 매수 필요한 수량과 비용을 확인하세요.</p>
+          <p>추가 매수 분리 손익률을 포함한 요약입니다.</p>
         </div>
         <DcaResult result={result} />
-      </section>
-
-      <section className="card">
-        <div className="card-header">
-          <h2>최근 계산</h2>
-          <p>로컬에 저장된 최근 계산 기록입니다.</p>
-        </div>
-        <DcaHistoryList history={history} />
       </section>
     </div>
   );

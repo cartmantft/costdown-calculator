@@ -2,10 +2,15 @@ import { calculateDca } from './calc';
 import type { DcaHistoryItem, DcaInput } from './types';
 
 const MOCK_INPUT: DcaInput = {
-  currentAvgPrice: 5000,
-  currentQuantity: 10,
-  marketPrice: 4500,
-  targetAvgPrice: 4800,
+  symbol: '삼성전자',
+  currentAvgPrice: 100000,
+  currentQuantity: 100,
+  additionalLots: [
+    {
+      price: 95000,
+      quantity: 100,
+    },
+  ],
 };
 
 export const buildMockHistory = (): DcaHistoryItem[] => {

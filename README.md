@@ -1,8 +1,16 @@
-# React + TypeScript + Vite
+# Costdown Calculator
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Environment variables
 
-Currently, two official plugins are available:
+1. Copy `.env.example` to `.env` (gitignored) and adjust values locally.
+2. Keys:
+   - `DEV_SERVER_HOST` / `DEV_SERVER_PORT`: host and port for Granite/Vite dev server (use your LAN IP to test on real devices).
+   - `VITE_DCA_HISTORY_LIMIT`: max history items stored in localStorage (default 10).
+   - `VITE_APP_CURRENCY_SYMBOL` / `VITE_APP_CURRENCY`: currency label shown alongside numbers (defaults to 원/KRW).
+
+---
+
+This project started from the React + TypeScript + Vite template. The original notes are kept below for reference.
 
 - [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
 - [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh

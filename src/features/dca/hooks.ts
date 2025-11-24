@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { calculateDca } from './calc';
-import { addHistory, loadHistory, removeHistory } from './history';
+import { addHistory, loadHistory, removeHistory, updateHistory } from './history';
 import { buildMockHistory } from './mock';
 import type { DcaHistoryItem, DcaInput } from './types';
 
@@ -67,9 +67,13 @@ export const useDcaCalculator = () => {
     const trimmedInput = { ...input, symbol: input.symbol.trim() };
     const nextResult = calculateDca(trimmedInput);
     if (!nextResult) return { ok: false as const };
-    const nextHistory = addHistory(trimmedInput, nextResult);
+
+    const nextHistory = selectedId
+      ? updateHistory(selectedId, trimmedInput, nextResult)
+      : addHistory(trimmedInput, nextResult);
+
     setHistory(nextHistory);
-    setSelectedId(nextHistory[0].id);
+    setSelectedId(selectedId ?? nextHistory[0]?.id ?? null);
     return { ok: true as const };
   };
 

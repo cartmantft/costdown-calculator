@@ -9,7 +9,6 @@ interface DcaFormProps {
   onAddLot: () => void;
   onRemoveLot: (index: number) => void;
   onSave: () => void;
-  onReset: () => void;
   canSave: boolean;
 }
 
@@ -45,7 +44,6 @@ const DcaForm = ({
   onAddLot,
   onRemoveLot,
   onSave,
-  onReset,
   canSave,
 }: DcaFormProps) => {
   const handleSubmit = (event: FormEvent) => {
@@ -151,9 +149,6 @@ const DcaForm = ({
       <div className="form-actions">
         <button type="submit" className="btn primary" disabled={!canSave}>
           저장
-        </button>
-        <button type="button" className="btn ghost" onClick={onReset}>
-          새 계산
         </button>
       </div>
     </form>

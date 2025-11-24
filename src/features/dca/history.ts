@@ -50,6 +50,25 @@ export const addHistory = (input: DcaInput, result: DcaResult | null): DcaHistor
   return next;
 };
 
+export const updateHistory = (id: string, input: DcaInput, result: DcaResult | null): DcaHistoryItem[] => {
+  if (!result) return loadHistory();
+  const history = loadHistory();
+  const hasTarget = history.some((item) => item.id === id);
+
+  if (!hasTarget) {
+    const next = [{ id, input, result, createdAt: new Date().toISOString() }, ...history].slice(
+      0,
+      HISTORY_LIMIT
+    );
+    persistHistory(next);
+    return next;
+  }
+
+  const next = history.map((item) => (item.id === id ? { ...item, input, result } : item));
+  persistHistory(next);
+  return next;
+};
+
 export const removeHistory = (id: string): DcaHistoryItem[] => {
   const next = loadHistory().filter((item) => item.id !== id);
   persistHistory(next);

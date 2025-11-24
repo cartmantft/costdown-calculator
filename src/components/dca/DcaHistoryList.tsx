@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { appConfig } from '../../config/appConfig';
 import type { DcaHistoryItem } from '../../features/dca/types';
 
@@ -103,32 +103,21 @@ const DcaHistoryList = ({ history, onSelect, onDelete }: DcaHistoryListProps) =>
             >
               <div className="history-card history-content">
                 <div className="history-meta">
-                  <div>
-                    <div className="history-title">{item.input.symbol || '이름 없는 종목'}</div>
-                    <span className="muted">
-                      {new Date(item.createdAt).toLocaleString(undefined, {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                    })}
+                  <div className="history-title">{item.input.symbol || '이름 없는 종목'}</div>
+                  <div className="history-value">
+                    <div className="history-price">
+                      {formatNumber(item.result.finalAvgPrice)} {currencySymbol}
+                    </div>
+                    <span className={`pill ${badgeClass}`}>{formatPercent(item.result.additionalReturn)}</span>
+                  </div>
+                </div>
+                <div className="history-stats">
+                  <span>총 수량 {formatNumber(item.result.finalQuantity)}주</span>
+                  <span>
+                    추가 매수 {formatNumber(item.result.additionalTotalCost)} {currencySymbol}
                   </span>
                 </div>
-                <div className="history-value">
-                  <div className="history-price">
-                    {formatNumber(item.result.finalAvgPrice)} {currencySymbol}
-                  </div>
-                  <span className={`pill ${badgeClass}`}>{formatPercent(item.result.additionalReturn)}</span>
-                </div>
               </div>
-              <div className="history-stats">
-                <span>총 수량 {formatNumber(item.result.finalQuantity)}주</span>
-                <span>
-                  추가 매수 {formatNumber(item.result.additionalTotalCost)} {currencySymbol}
-                </span>
-              </div>
-            </div>
               <button
                 type="button"
                 className="history-delete"

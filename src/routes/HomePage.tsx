@@ -37,10 +37,7 @@ const HomePage = () => {
   if (view === 'list') {
     return (
       <div className="single-column">
-        <header className="list-header">
-          <div className="list-header-copy">
-            <h2>코스트다운 계산기</h2>
-          </div>
+        <header className="list-header list-header-right">
           <button type="button" className="btn primary list-header-action" onClick={() => openDetail()}>
             새 계산
           </button>
@@ -56,12 +53,12 @@ const HomePage = () => {
 
   return (
     <div className="page-grid">
+      <header className="list-header list-header-right">
+        <button type="button" className="btn ghost" onClick={() => setView('list')}>
+          목록으로
+        </button>
+      </header>
       <section className="card">
-        <div className="card-header card-header-plain">
-          <button type="button" className="btn ghost" onClick={() => setView('list')}>
-            목록으로
-          </button>
-        </div>
         <DcaForm
           input={input}
           onChange={updateInput}
@@ -69,7 +66,6 @@ const HomePage = () => {
           onAddLot={addLot}
           onRemoveLot={removeLot}
           onSave={saveAndBack}
-          onReset={reset}
           canSave={Boolean(result)}
         />
       </section>

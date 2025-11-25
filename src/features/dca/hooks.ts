@@ -4,7 +4,7 @@ import { addHistory, loadHistory, removeHistory, updateHistory } from './history
 import { buildMockHistory } from './mock';
 import type { DcaHistoryItem, DcaInput } from './types';
 
-const EMPTY_LOT = { price: null, quantity: null };
+const EMPTY_LOT = { price: 0, quantity: 0 };
 
 const DEFAULT_INPUT: DcaInput = {
   symbol: '',
@@ -37,7 +37,7 @@ export const useDcaCalculator = () => {
   const addLot = () => {
     setInput((prev) => ({
       ...prev,
-      additionalLots: [...prev.additionalLots, { ...EMPTY_LOT }],
+      additionalLots: [{ ...EMPTY_LOT }, ...prev.additionalLots],
     }));
   };
 

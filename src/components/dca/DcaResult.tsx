@@ -1,17 +1,11 @@
+import { Badge } from '@toss/tds-mobile';
 import { appConfig } from '../../config/appConfig';
+import { formatNumber, formatPercent } from '../../lib/numberFormat';
 import type { DcaResult as DcaResultData } from '../../features/dca/types';
 
 interface DcaResultProps {
   result: DcaResultData | null;
 }
-
-const formatNumber = (value: number) =>
-  Number.isFinite(value) ? value.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '-';
-
-const formatPercent = (value: number) =>
-  Number.isFinite(value)
-    ? `${value > 0 ? '+' : ''}${(value * 100).toFixed(2)}%`
-    : '-';
 
 const DcaResult = ({ result }: DcaResultProps) => {
   if (!result) {
@@ -19,7 +13,7 @@ const DcaResult = ({ result }: DcaResultProps) => {
   }
 
   const isGain = result.additionalReturn > 0;
-  const badgeClass = isGain ? 'badge-positive' : 'badge-negative';
+  const badgeColor = isGain ? 'red' : 'blue';
   const currencySymbol = appConfig.currencySymbol;
 
   return (
@@ -54,7 +48,9 @@ const DcaResult = ({ result }: DcaResultProps) => {
       </div>
       <div className="result-row">
         <span>추가 매수 후 손익률</span>
-        <span className={`pill ${badgeClass}`}>{formatPercent(result.additionalReturn)}</span>
+        <Badge size="small" variant="fill" color={badgeColor}>
+          {formatPercent(result.additionalReturn)}
+        </Badge>
       </div>
     </div>
   );

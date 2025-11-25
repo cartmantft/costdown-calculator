@@ -56,8 +56,9 @@ const DcaForm = ({
   return (
     <form className="form-grid" onSubmit={handleSubmit}>
       <ListHeader
+        className="section-tight"
         title={
-          <ListHeader.TitleParagraph fontWeight="bold" size={18}>
+          <ListHeader.TitleParagraph fontWeight="bold" typography="t4">
             현재 보유
           </ListHeader.TitleParagraph>
         }
@@ -68,15 +69,15 @@ const DcaForm = ({
         }
         descriptionPosition="bottom"
       />
-      <TextField
-        variant="box"
-        label="종목명"
-        placeholder="예) 삼성전자"
-        value={input.symbol}
-        onChange={(event) => onChange({ symbol: event.target.value })}
-      />
 
       <div className="field-group">
+        <TextField
+          variant="box"
+          label="종목명"
+          placeholder="예) 삼성전자"
+          value={input.symbol}
+          onChange={(event) => onChange({ symbol: event.target.value })}
+        />
         <TextField
         variant="box"
         label="현재 평균단가"
@@ -105,7 +106,7 @@ const DcaForm = ({
 
       <ListHeader
         title={
-          <ListHeader.TitleParagraph fontWeight="bold" size={18}>
+          <ListHeader.TitleParagraph fontWeight="bold"  typography="t4">
             추가 매수
           </ListHeader.TitleParagraph>
         }
@@ -135,10 +136,11 @@ const DcaForm = ({
       {input.additionalLots.map((lot, index) => {
         const lotTotal =
           lot.price !== null && lot.quantity !== null ? lot.price * lot.quantity : null;
+        const lotNumber = input.additionalLots.length - index;
         return (
           <div className="lot-row" key={index}>
             <div className="lot-row-header">
-              <ListHeader.TitleParagraph>추가 입력 {index + 1}</ListHeader.TitleParagraph>
+              <ListHeader.DescriptionParagraph>{`추가 입력 ${lotNumber}`}</ListHeader.DescriptionParagraph>
               <TextButton
                 size="small"
                 variant="arrow"

@@ -28,7 +28,15 @@ export const calculateDca = (input: DcaInput): DcaResult | null => {
   const { cost: additionalTotalCost, quantity: additionalQuantity } = sumLots(additionalLots);
 
   if (additionalQuantity <= 0 || additionalTotalCost <= 0) {
-    return null;
+    return {
+      finalAvgPrice: currentAvgPrice,
+      finalQuantity: currentQuantity,
+      currentTotalCost,
+      additionalTotalCost: 0,
+      additionalQuantity: 0,
+      additionalAvgPrice: 0,
+      additionalReturn: 0,
+    };
   }
 
   const finalQuantity = currentQuantity + additionalQuantity;

@@ -1,5 +1,7 @@
 import { FormEvent, ChangeEvent } from 'react';
+import { ListHeader, TextButton, TextField } from '@toss/tds-mobile';
 import { appConfig } from '../../config/appConfig';
+import { formatNumber, formatNumberInput, parseNumberInput } from '../../lib/numberFormat';
 import type { DcaInput } from '../../features/dca/types';
 
 interface DcaFormProps {
@@ -12,12 +14,10 @@ interface DcaFormProps {
   canSave: boolean;
 }
 
-const toNumberOrNull = (raw: string) => (raw === '' ? null : Number(raw));
-
 const numberInput =
   (key: keyof DcaInput, onChange: DcaFormProps['onChange']) =>
   (event: ChangeEvent<HTMLInputElement>) => {
-    const nextValue = toNumberOrNull(event.target.value);
+    const nextValue = parseNumberInput(event.target.value);
     onChange({ [key]: nextValue });
   };
 
@@ -28,14 +28,9 @@ const lotInput =
     onChange: DcaFormProps['onChangeLot']
   ) =>
   (event: ChangeEvent<HTMLInputElement>) => {
-    const nextValue = toNumberOrNull(event.target.value);
+    const nextValue = parseNumberInput(event.target.value);
     onChange(index, { [key]: nextValue });
   };
-
-const formatNumber = (value: number | null | undefined) =>
-  value !== null && value !== undefined && Number.isFinite(value)
-    ? value.toLocaleString()
-    : '-';
 
 const DcaForm = ({
   input,
@@ -48,6 +43,7 @@ const DcaForm = ({
 }: DcaFormProps) => {
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
+    if (!canSave) return;
     onSave();
   };
 
@@ -59,98 +55,129 @@ const DcaForm = ({
 
   return (
     <form className="form-grid" onSubmit={handleSubmit}>
-      <label className="form-field">
-        <span>종목명</span>
-        <input
-          type="text"
-          value={input.symbol}
-          placeholder="예) 삼성전자"
-          onChange={(event) => onChange({ symbol: event.target.value })}
-        />
-      </label>
+      <ListHeader
+        title={
+          <ListHeader.TitleParagraph fontWeight="bold" size={18}>
+            현재 보유
+          </ListHeader.TitleParagraph>
+        }
+        description={
+          <ListHeader.DescriptionParagraph>
+            현재 보유 중인 단가와 수량을 입력하세요.
+          </ListHeader.DescriptionParagraph>
+        }
+        descriptionPosition="bottom"
+      />
+      <TextField
+        variant="box"
+        label="종목명"
+        placeholder="예) 삼성전자"
+        value={input.symbol}
+        onChange={(event) => onChange({ symbol: event.target.value })}
+      />
 
       <div className="field-group">
-        <div className="form-field">
-          <span>현재 평균단가</span>
-          <input
-            type="number"
-            value={input.currentAvgPrice ?? ''}
-            min={0}
-            onChange={numberInput('currentAvgPrice', onChange)}
-          />
-        </div>
-        <div className="form-field">
-          <span>보유 수량</span>
-          <input
-            type="number"
-            value={input.currentQuantity ?? ''}
-            min={0}
-            onChange={numberInput('currentQuantity', onChange)}
-          />
-        </div>
-        <div className="form-field readonly">
-          <span>현재 보유 총액</span>
-          <div className="readonly-chip">
-            {formatNumber(currentTotal)} {currencySymbol}
-          </div>
-        </div>
+        <TextField
+        variant="box"
+        label="현재 평균단가"
+        type="text"
+        inputMode="decimal"
+        value={formatNumberInput(input.currentAvgPrice)}
+        suffix={currencySymbol}
+        onChange={numberInput('currentAvgPrice', onChange)}
+      />
+      <TextField
+        variant="box"
+        label="보유 수량"
+        type="text"
+        inputMode="decimal"
+        value={formatNumberInput(input.currentQuantity)}
+        onChange={numberInput('currentQuantity', onChange)}
+      />
+        <TextField
+          variant="box"
+          label="현재 보유 총액"
+          value={`${formatNumber(currentTotal)} ${currencySymbol}`}
+          readOnly
+          disabled
+        />
       </div>
 
-      <div className="lot-header">
-        <h3>추가 매수</h3>
-        <button type="button" className="btn ghost" onClick={onAddLot}>
-          + 행 추가
-        </button>
-      </div>
+      <ListHeader
+        title={
+          <ListHeader.TitleParagraph fontWeight="bold" size={18}>
+            추가 매수
+          </ListHeader.TitleParagraph>
+        }
+        description={
+          <ListHeader.DescriptionParagraph>
+            행을 추가해 여러 번에 나눠 입력할 수 있어요.
+          </ListHeader.DescriptionParagraph>
+        }
+        descriptionPosition="bottom"
+        right={
+          <div className="lot-header-actions">
+            <TextButton
+              size="small"
+              variant="arrow"
+              arrowPlacement="inline"
+              color="primary"
+              className="text-primary"
+              onClick={onAddLot}
+              type="button"
+            >
+              행 추가
+            </TextButton>
+          </div>
+        }
+      />
 
       {input.additionalLots.map((lot, index) => {
         const lotTotal =
           lot.price !== null && lot.quantity !== null ? lot.price * lot.quantity : null;
         return (
           <div className="lot-row" key={index}>
-            <div className="form-field">
-              <span>추가 단가</span>
-              <input
-                type="number"
-                value={lot.price ?? ''}
-                min={0}
-                onChange={lotInput(index, 'price', onChangeLot)}
-              />
-            </div>
-            <div className="form-field">
-              <span>추가 수량</span>
-              <input
-                type="number"
-                value={lot.quantity ?? ''}
-                min={0}
-                onChange={lotInput(index, 'quantity', onChangeLot)}
-              />
-            </div>
-            <div className="form-field readonly">
-              <span>추가 총액</span>
-              <div className="readonly-chip">
-                {formatNumber(lotTotal)} {currencySymbol}
-              </div>
-            </div>
-            <div className="lot-actions">
-              <button
-                type="button"
-                className="btn ghost"
+            <div className="lot-row-header">
+              <ListHeader.TitleParagraph>추가 입력 {index + 1}</ListHeader.TitleParagraph>
+              <TextButton
+                size="small"
+                variant="arrow"
+                arrowPlacement="inline"
+                className="text-danger"
+                color="danger"
                 onClick={() => onRemoveLot(index)}
-                aria-label="행 삭제"
               >
                 삭제
-              </button>
+              </TextButton>
             </div>
+            <TextField
+              variant="box"
+              label="추가 단가"
+              type="text"
+              inputMode="decimal"
+              value={formatNumberInput(lot.price)}
+              suffix={currencySymbol}
+              onChange={lotInput(index, 'price', onChangeLot)}
+            />
+            <TextField
+              variant="box"
+              label="추가 수량"
+              type="text"
+              inputMode="decimal"
+              value={formatNumberInput(lot.quantity)}
+              onChange={lotInput(index, 'quantity', onChangeLot)}
+            />
+            <TextField
+              variant="box"
+              label="추가 총액"
+              value={`${formatNumber(lotTotal)} ${currencySymbol}`}
+              readOnly
+              disabled
+            />
           </div>
         );
       })}
 
-      <div className="form-actions">
-        <button type="submit" className="btn primary" disabled={!canSave}>
-          저장
-        </button>
-      </div>
     </form>
   );
 };

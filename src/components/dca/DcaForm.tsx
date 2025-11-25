@@ -74,7 +74,7 @@ const DcaForm = ({
         <TextField
           variant="box"
           label="종목명"
-          placeholder="예) 삼성전자"
+          placeholder="종목명"
           value={input.symbol}
           onChange={(event) => onChange({ symbol: event.target.value })}
         />

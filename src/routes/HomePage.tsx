@@ -1,23 +1,21 @@
 import { useState } from 'react';
-import { BottomCTA, Button, ListHeader, Toast } from '@toss/tds-mobile';
+import { BottomCTA, Button, ConfirmDialog, ListHeader, SegmentedControl, Toast } from '@toss/tds-mobile';
 import DcaForm from '../components/dca/DcaForm';
 import DcaHistoryList from '../components/dca/DcaHistoryList';
 import DcaResult from '../components/dca/DcaResult';
 import { useDcaCalculator } from '../features/dca/hooks';
-import { appConfig } from '../config/appConfig';
-import { CurrencyCode, getCurrencyMeta } from '../config/currency';
+import { SUPPORTED_CURRENCIES, type CurrencyCode } from '../features/dca/types';
+import { currencyMap } from '../config/appConfig';
 
 type View = 'list' | 'detail';
 
 const HomePage = () => {
   const [view, setView] = useState<View>('list');
+  const [pendingCurrency, setPendingCurrency] = useState<CurrencyCode | null>(null);
   const [toast, setToast] = useState<{ open: boolean; text: string }>({
     open: false,
     text: '',
   });
-  const [currencyCode, setCurrencyCode] = useState<CurrencyCode>(
-    getCurrencyMeta(appConfig.currencyCode).code
-  );
   const {
     input,
     result,
@@ -31,6 +29,7 @@ const HomePage = () => {
     openFromHistory,
     save,
     deleteEntry,
+    setCurrency,
   } = useDcaCalculator();
 
   const showToast = (text: string) => {
@@ -71,11 +70,29 @@ const HomePage = () => {
     showToast('삭제했습니다');
   };
 
-  const currencySymbol = getCurrencyMeta(currencyCode).symbol;
-
-  const handleCurrencyChange = (code: CurrencyCode) => {
-    setCurrencyCode(code);
+  const hasUserInput = () => {
+    const hasCurrent =
+      (input.currentAvgPrice ?? 0) > 0 ||
+      (input.currentQuantity ?? 0) > 0 ||
+      input.symbol.trim().length > 0;
+    const hasLots = input.additionalLots.some(
+      (lot) => (lot.price ?? 0) > 0 || (lot.quantity ?? 0) > 0
+    );
+    return hasCurrent || hasLots;
   };
+
+  const confirmCurrencyChange = (currency: CurrencyCode) => {
+    setPendingCurrency(currency);
+  };
+
+  const applyCurrencyChange = (currency: CurrencyCode) => {
+    setCurrency(currency, { resetInput: true });
+    setPendingCurrency(null);
+    setView('detail');
+    showToast('통화를 변경했어요. 입력값을 새로 입력해주세요.');
+  };
+
+  const cancelCurrencyChange = () => setPendingCurrency(null);
 
   if (view === 'list') {
     return (
@@ -83,7 +100,7 @@ const HomePage = () => {
         <div className="single-column">
           <ListHeader
             title={
-              <ListHeader.TitleParagraph fontWeight="bold"  typography="t4">
+              <ListHeader.TitleParagraph fontWeight="bold" typography="t4">
                 계산 목록
               </ListHeader.TitleParagraph>
             }
@@ -101,7 +118,6 @@ const HomePage = () => {
           </div>
           <DcaHistoryList
             history={history}
-            currencySymbol={currencySymbol}
             onSelect={(id) => openDetail(id)}
             onDelete={(id) => deleteAndNotify(id)}
           />
@@ -121,6 +137,23 @@ const HomePage = () => {
     <>
       <div className="page-grid has-bottom-cta">
         <section className="card">
+          <div className="card-header">
+            <h2>통화 선택</h2>
+            <p>KRW / USD 중에서 계산 통화를 선택하세요.</p>
+            <SegmentedControl
+              options={SUPPORTED_CURRENCIES.map((currency) => currencyMap[currency].code)}
+              selectedIndex={SUPPORTED_CURRENCIES.findIndex((code) => code === input.currency)}
+              onChange={(idx) => {
+                const selected = SUPPORTED_CURRENCIES[idx] ?? input.currency;
+                if (selected === input.currency) return;
+                if (hasUserInput()) {
+                  confirmCurrencyChange(selected);
+                  return;
+                }
+                setCurrency(selected, { resetInput: true });
+              }}
+            />
+          </div>
           <DcaForm
             input={input}
             onChange={updateInput}
@@ -128,9 +161,6 @@ const HomePage = () => {
             onAddLot={handleAddLot}
             onRemoveLot={removeLot}
             onSave={saveAndBack}
-            currencyCode={currencyCode}
-            currencySymbol={currencySymbol}
-            onChangeCurrency={handleCurrencyChange}
             canSave={Boolean(result)}
           />
         </section>
@@ -140,7 +170,7 @@ const HomePage = () => {
             <h2>계산 결과</h2>
             <p>추가 매수 분리 손익률을 포함한 요약입니다.</p>
           </div>
-          <DcaResult result={result} currencySymbol={currencySymbol} />
+          <DcaResult result={result} currency={input.currency} />
         </section>
         <BottomCTA.Double
           fixed
@@ -162,6 +192,25 @@ const HomePage = () => {
         open={toast.open}
         text={toast.text}
         onClose={() => setToast((prev) => ({ ...prev, open: false }))}
+      />
+      <ConfirmDialog
+        open={pendingCurrency !== null}
+        onClose={cancelCurrencyChange}
+        title="통화를 변경할까요?"
+        description="입력한 값이 초기화되고 새로운 통화로 다시 입력해야 합니다."
+        cancelButton={
+          <ConfirmDialog.CancelButton variant="weak" onClick={cancelCurrencyChange}>
+            취소
+          </ConfirmDialog.CancelButton>
+        }
+        confirmButton={
+          <ConfirmDialog.ConfirmButton
+            color="primary"
+            onClick={() => pendingCurrency && applyCurrencyChange(pendingCurrency)}
+          >
+            변경
+          </ConfirmDialog.ConfirmButton>
+        }
       />
     </>
   );

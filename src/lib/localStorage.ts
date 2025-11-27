@@ -1,5 +1,10 @@
 const isBrowser = typeof window !== 'undefined';
 
+export const storageKeys = {
+  history: 'dca:history',
+  lastCurrency: 'dca:lastCurrency',
+};
+
 export const readItem = (key: string): string | null => {
   if (!isBrowser) return null;
   try {

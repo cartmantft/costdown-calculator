@@ -1,20 +1,28 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { appConfig } from '../../config/appConfig';
 import { calculateDca } from './calc';
 import { addHistory, loadHistory, removeHistory, updateHistory } from './history';
 import { buildMockHistory } from './mock';
-import type { DcaHistoryItem, DcaInput } from './types';
+import type { CurrencyCode, DcaHistoryItem, DcaInput } from './types';
+import { readItem, storageKeys, writeItem } from '../../lib/localStorage';
 
 const EMPTY_LOT = { price: 0, quantity: 0 };
 
-const DEFAULT_INPUT: DcaInput = {
+const parseCurrency = (code: string | null): CurrencyCode => (code === 'USD' ? 'USD' : 'KRW');
+
+const buildDefaultInput = (currency: CurrencyCode): DcaInput => ({
+  currency,
   symbol: '',
   currentAvgPrice: null,
   currentQuantity: null,
   additionalLots: [EMPTY_LOT],
-};
+});
+
+const getInitialCurrency = (): CurrencyCode => parseCurrency(readItem(storageKeys.lastCurrency));
 
 export const useDcaCalculator = () => {
-  const [input, setInput] = useState<DcaInput>(DEFAULT_INPUT);
+  const initialCurrency = getInitialCurrency() || appConfig.currencyCode;
+  const [input, setInput] = useState<DcaInput>(buildDefaultInput(initialCurrency));
   const [history, setHistory] = useState<DcaHistoryItem[]>(() => {
     const saved = loadHistory();
     return saved.length ? saved : buildMockHistory();
@@ -53,7 +61,7 @@ export const useDcaCalculator = () => {
 
   const reset = () => {
     setSelectedId(null);
-    setInput(DEFAULT_INPUT);
+    setInput((prev) => buildDefaultInput(prev.currency));
   };
 
   const openFromHistory = (id: string) => {
@@ -85,6 +93,17 @@ export const useDcaCalculator = () => {
     }
   };
 
+  const setCurrency = (currency: CurrencyCode, options?: { resetInput?: boolean }) => {
+    setSelectedId(null);
+    setInput((prev) =>
+      options?.resetInput ? buildDefaultInput(currency) : { ...prev, currency }
+    );
+  };
+
+  useEffect(() => {
+    writeItem(storageKeys.lastCurrency, input.currency);
+  }, [input.currency]);
+
   return {
     input,
     result,
@@ -98,5 +117,6 @@ export const useDcaCalculator = () => {
     openFromHistory,
     save,
     deleteEntry,
+    setCurrency,
   };
 };

@@ -1,3 +1,6 @@
+export type CurrencyCode = 'KRW' | 'USD';
+export const SUPPORTED_CURRENCIES: CurrencyCode[] = ['KRW', 'USD'];
+
 export interface AdditionalLot {
   price: number | null;
   quantity: number | null;
@@ -8,6 +11,7 @@ export interface DcaInput {
   currentAvgPrice: number | null;
   currentQuantity: number | null;
   additionalLots: AdditionalLot[];
+  currency: CurrencyCode;
 }
 
 export interface DcaResult {
@@ -22,6 +26,7 @@ export interface DcaResult {
 
 export interface DcaHistoryItem {
   id: string;
+  currency: CurrencyCode;
   input: DcaInput;
   result: DcaResult;
   createdAt: string;

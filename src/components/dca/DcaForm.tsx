@@ -54,26 +54,11 @@ const DcaForm = ({
   canSave,
 }: DcaFormProps) => {
   const currency = input.currency ?? 'KRW';
-  const currencyOptions = SUPPORTED_CURRENCIES.map((code) => currencyMap[code].code);
-  const currencyIndex = SUPPORTED_CURRENCIES.findIndex((code) => code === currency);
-
-  const handleCurrencyChange = (idx: number) => {
-    const next = SUPPORTED_CURRENCIES[idx] ?? currency;
+  const handleCurrencyChange = (value: string) => {
+    const next = value === 'USD' ? 'USD' : 'KRW';
     if (next === currency) return;
     onChange({ currency: next });
   };
-
-  const averagePriceLabel = (
-    <div className="field-label-row">
-      <span>현재 평균단가</span>
-      <SegmentedControl
-        size="small"
-        options={currencyOptions}
-        selectedIndex={currencyIndex >= 0 ? currencyIndex : 0}
-        onChange={handleCurrencyChange}
-      />
-    </div>
-  );
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -112,9 +97,23 @@ const DcaForm = ({
           value={input.symbol}
           onChange={(event) => onChange({ symbol: event.target.value })}
         />
+        <div className="field-label-row">
+          <span className="field-inline-label">현재 평균단가</span>
+          <SegmentedControl
+            size="small"
+            value={currency}
+            onChange={handleCurrencyChange}
+          >
+            {SUPPORTED_CURRENCIES.map((code) => (
+              <SegmentedControl.Item key={code} value={code}>
+                {currencyMap[code].code}
+              </SegmentedControl.Item>
+            ))}
+          </SegmentedControl>
+        </div>
         <TextField
           variant="box"
-          label={averagePriceLabel}
+          label="현재 평균단가"
           type="text"
           inputMode="decimal"
           value={formatNumberInput(input.currentAvgPrice)}

@@ -110,6 +110,11 @@ input {
   flex-wrap: wrap;
 }
 
+.field-inline-label {
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
 .currency-selector {
   display: inline-flex;
   gap: 8px;

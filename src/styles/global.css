@@ -102,12 +102,20 @@ input {
   gap: 12px;
 }
 
+.field-group-item {
+  display: grid;
+  gap: 6px;
+}
+
 .field-label-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
   flex-wrap: wrap;
+  margin-bottom: 4px;
+  width: 100%;
+  padding-inline: 12px;
 }
 
 .field-inline-label {

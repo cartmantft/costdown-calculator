@@ -60,6 +60,8 @@ const DcaForm = ({
     onChange({ currency: next });
   };
 
+  const avgPriceInputId = 'avg-price-input';
+
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
     if (!canSave) return;
@@ -97,29 +99,33 @@ const DcaForm = ({
           value={input.symbol}
           onChange={(event) => onChange({ symbol: event.target.value })}
         />
-        <div className="field-label-row">
-          <span className="field-inline-label">현재 평균단가</span>
-          <SegmentedControl
-            size="small"
-            value={currency}
-            onChange={handleCurrencyChange}
-          >
-            {SUPPORTED_CURRENCIES.map((code) => (
-              <SegmentedControl.Item key={code} value={code}>
-                {currencyMap[code].code}
-              </SegmentedControl.Item>
-            ))}
-          </SegmentedControl>
+        <div className="field-group-item">
+          <div className="field-label-row">
+            <label className="field-inline-label" htmlFor={avgPriceInputId}>
+              현재 평균단가
+            </label>
+            <SegmentedControl
+              size="small"
+              value={currency}
+              onChange={handleCurrencyChange}
+            >
+              {SUPPORTED_CURRENCIES.map((code) => (
+                <SegmentedControl.Item key={code} value={code}>
+                  {currencyMap[code].code}
+                </SegmentedControl.Item>
+              ))}
+            </SegmentedControl>
+          </div>
+          <TextField
+            variant="box"
+            id={avgPriceInputId}
+            type="text"
+            inputMode="decimal"
+            value={formatNumberInput(input.currentAvgPrice)}
+            suffix={currencySymbol}
+            onChange={numberInput('currentAvgPrice', onChange, currency)}
+          />
         </div>
-        <TextField
-          variant="box"
-          label="현재 평균단가"
-          type="text"
-          inputMode="decimal"
-          value={formatNumberInput(input.currentAvgPrice)}
-          suffix={currencySymbol}
-          onChange={numberInput('currentAvgPrice', onChange, currency)}
-        />
         <TextField
           variant="box"
           label="보유 수량"

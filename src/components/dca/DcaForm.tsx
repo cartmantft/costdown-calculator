@@ -1,5 +1,5 @@
 import { FormEvent, ChangeEvent } from 'react';
-import { ListHeader, TextButton, TextField } from '@toss/tds-mobile';
+import { ListHeader, SegmentedControl, TextButton, TextField } from '@toss/tds-mobile';
 import { currencyMap } from '../../config/appConfig';
 import {
   formatCurrencyNumber,
@@ -8,6 +8,7 @@ import {
   parseNumberInput,
 } from '../../lib/numberFormat';
 import type { CurrencyCode, DcaInput } from '../../features/dca/types';
+import { SUPPORTED_CURRENCIES } from '../../features/dca/types';
 
 interface DcaFormProps {
   input: DcaInput;
@@ -53,6 +54,14 @@ const DcaForm = ({
   canSave,
 }: DcaFormProps) => {
   const currency = input.currency ?? 'KRW';
+  const handleCurrencyChange = (value: string) => {
+    const next = value === 'USD' ? 'USD' : 'KRW';
+    if (next === currency) return;
+    onChange({ currency: next });
+  };
+
+  const avgPriceInputId = 'avg-price-input';
+
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
     if (!canSave) return;
@@ -90,15 +99,33 @@ const DcaForm = ({
           value={input.symbol}
           onChange={(event) => onChange({ symbol: event.target.value })}
         />
-        <TextField
-          variant="box"
-          label="현재 평균단가"
-          type="text"
-          inputMode="decimal"
-          value={formatNumberInput(input.currentAvgPrice)}
-          suffix={currencySymbol}
-          onChange={numberInput('currentAvgPrice', onChange, currency)}
-        />
+        <div className="field-group-item">
+          <div className="field-label-row">
+            <label className="field-inline-label" htmlFor={avgPriceInputId}>
+              현재 평균단가
+            </label>
+            <SegmentedControl
+              size="small"
+              value={currency}
+              onChange={handleCurrencyChange}
+            >
+              {SUPPORTED_CURRENCIES.map((code) => (
+                <SegmentedControl.Item key={code} value={code}>
+                  {currencyMap[code].code}
+                </SegmentedControl.Item>
+              ))}
+            </SegmentedControl>
+          </div>
+          <TextField
+            variant="box"
+            id={avgPriceInputId}
+            type="text"
+            inputMode="decimal"
+            value={formatNumberInput(input.currentAvgPrice)}
+            suffix={currencySymbol}
+            onChange={numberInput('currentAvgPrice', onChange, currency)}
+          />
+        </div>
         <TextField
           variant="box"
           label="보유 수량"

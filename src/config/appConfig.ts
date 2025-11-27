@@ -1,7 +1,6 @@
 import type { CurrencyCode } from '../features/dca/types';
 
 const DEFAULT_HISTORY_LIMIT = 10;
-const DEFAULT_CURRENCY_CODE: CurrencyCode = 'KRW';
 const DEFAULT_KRW_SYMBOL = '원';
 const DEFAULT_USD_SYMBOL = '$';
 

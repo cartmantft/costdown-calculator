@@ -1,21 +1,19 @@
 import { Badge } from '@toss/tds-mobile';
-import { appConfig } from '../../config/appConfig';
 import { formatNumber, formatPercent } from '../../lib/numberFormat';
 import type { DcaResult as DcaResultData } from '../../features/dca/types';
 
 interface DcaResultProps {
   result: DcaResultData | null;
+  currencySymbol: string;
 }
 
-const DcaResult = ({ result }: DcaResultProps) => {
+const DcaResult = ({ result, currencySymbol }: DcaResultProps) => {
   if (!result) {
     return <p className="muted">필수 입력을 채우면 결과가 바로 계산됩니다.</p>;
   }
 
   const isGain = result.additionalReturn > 0;
   const badgeColor = isGain ? 'red' : 'blue';
-  const currencySymbol = appConfig.currencySymbol;
-
   return (
     <div className="result">
       <div className="result-row">

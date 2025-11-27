@@ -4,6 +4,8 @@ import DcaForm from '../components/dca/DcaForm';
 import DcaHistoryList from '../components/dca/DcaHistoryList';
 import DcaResult from '../components/dca/DcaResult';
 import { useDcaCalculator } from '../features/dca/hooks';
+import { appConfig } from '../config/appConfig';
+import { CurrencyCode, getCurrencyMeta } from '../config/currency';
 
 type View = 'list' | 'detail';
 
@@ -13,6 +15,9 @@ const HomePage = () => {
     open: false,
     text: '',
   });
+  const [currencyCode, setCurrencyCode] = useState<CurrencyCode>(
+    getCurrencyMeta(appConfig.currencyCode).code
+  );
   const {
     input,
     result,
@@ -66,6 +71,12 @@ const HomePage = () => {
     showToast('삭제했습니다');
   };
 
+  const currencySymbol = getCurrencyMeta(currencyCode).symbol;
+
+  const handleCurrencyChange = (code: CurrencyCode) => {
+    setCurrencyCode(code);
+  };
+
   if (view === 'list') {
     return (
       <>
@@ -90,6 +101,7 @@ const HomePage = () => {
           </div>
           <DcaHistoryList
             history={history}
+            currencySymbol={currencySymbol}
             onSelect={(id) => openDetail(id)}
             onDelete={(id) => deleteAndNotify(id)}
           />
@@ -116,6 +128,9 @@ const HomePage = () => {
             onAddLot={handleAddLot}
             onRemoveLot={removeLot}
             onSave={saveAndBack}
+            currencyCode={currencyCode}
+            currencySymbol={currencySymbol}
+            onChangeCurrency={handleCurrencyChange}
             canSave={Boolean(result)}
           />
         </section>
@@ -125,7 +140,7 @@ const HomePage = () => {
             <h2>계산 결과</h2>
             <p>추가 매수 분리 손익률을 포함한 요약입니다.</p>
           </div>
-          <DcaResult result={result} />
+          <DcaResult result={result} currencySymbol={currencySymbol} />
         </section>
         <BottomCTA.Double
           fixed

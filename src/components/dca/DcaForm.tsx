@@ -1,6 +1,6 @@
 import { FormEvent, ChangeEvent } from 'react';
 import { ListHeader, TextButton, TextField } from '@toss/tds-mobile';
-import { appConfig } from '../../config/appConfig';
+import { CurrencyCode, currencyOptions } from '../../config/currency';
 import { formatNumber, formatNumberInput, parseNumberInput } from '../../lib/numberFormat';
 import type { DcaInput } from '../../features/dca/types';
 
@@ -12,6 +12,9 @@ interface DcaFormProps {
   onRemoveLot: (index: number) => void;
   onSave: () => void;
   canSave: boolean;
+  currencyCode: CurrencyCode;
+  currencySymbol: string;
+  onChangeCurrency: (code: CurrencyCode) => void;
 }
 
 const numberInput =
@@ -40,6 +43,9 @@ const DcaForm = ({
   onRemoveLot,
   onSave,
   canSave,
+  currencyCode,
+  currencySymbol,
+  onChangeCurrency,
 }: DcaFormProps) => {
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -51,8 +57,6 @@ const DcaForm = ({
     input.currentAvgPrice !== null && input.currentQuantity !== null
       ? input.currentAvgPrice * input.currentQuantity
       : null;
-  const currencySymbol = appConfig.currencySymbol;
-
   return (
     <form className="form-grid" onSubmit={handleSubmit}>
       <ListHeader
@@ -78,23 +82,37 @@ const DcaForm = ({
           value={input.symbol}
           onChange={(event) => onChange({ symbol: event.target.value })}
         />
+        <div className="currency-field">
+          <div className="currency-selector" aria-label="통화 선택">
+            {currencyOptions.map((option) => (
+              <button
+                type="button"
+                key={option.code}
+                className={`currency-chip ${option.code === currencyCode ? 'is-active' : ''}`}
+                onClick={() => onChangeCurrency(option.code)}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+          <TextField
+            variant="box"
+            label="현재 평균단가"
+            type="text"
+            inputMode="decimal"
+            value={formatNumberInput(input.currentAvgPrice)}
+            suffix={currencySymbol}
+            onChange={numberInput('currentAvgPrice', onChange)}
+          />
+        </div>
         <TextField
-        variant="box"
-        label="현재 평균단가"
-        type="text"
-        inputMode="decimal"
-        value={formatNumberInput(input.currentAvgPrice)}
-        suffix={currencySymbol}
-        onChange={numberInput('currentAvgPrice', onChange)}
-      />
-      <TextField
-        variant="box"
-        label="보유 수량"
-        type="text"
-        inputMode="decimal"
-        value={formatNumberInput(input.currentQuantity)}
-        onChange={numberInput('currentQuantity', onChange)}
-      />
+          variant="box"
+          label="보유 수량"
+          type="text"
+          inputMode="decimal"
+          value={formatNumberInput(input.currentQuantity)}
+          onChange={numberInput('currentQuantity', onChange)}
+        />
         <TextField
           variant="box"
           label="현재 보유 총액"

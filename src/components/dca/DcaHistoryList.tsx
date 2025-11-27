@@ -1,18 +1,17 @@
 import React, { useState } from 'react';
-import { Badge, Button, ConfirmDialog, TextButton } from '@toss/tds-mobile';
-import { appConfig } from '../../config/appConfig';
+import { Badge, ConfirmDialog, TextButton } from '@toss/tds-mobile';
 import { formatNumber, formatPercent } from '../../lib/numberFormat';
 import type { DcaHistoryItem } from '../../features/dca/types';
 
 interface DcaHistoryListProps {
   history: DcaHistoryItem[];
+  currencySymbol: string;
   onSelect?: (id: string) => void;
   onDelete?: (id: string) => void;
 }
 
-const DcaHistoryList = ({ history, onSelect, onDelete }: DcaHistoryListProps) => {
+const DcaHistoryList = ({ history, currencySymbol, onSelect, onDelete }: DcaHistoryListProps) => {
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
-  const currencySymbol = appConfig.currencySymbol;
 
   const handleDeleteClick = (id: string, event: React.MouseEvent) => {
     event.stopPropagation();

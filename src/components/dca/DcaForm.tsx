@@ -1,5 +1,5 @@
 import { FormEvent, ChangeEvent } from 'react';
-import { ListHeader, TextButton, TextField } from '@toss/tds-mobile';
+import { ListHeader, SegmentedControl, TextButton, TextField } from '@toss/tds-mobile';
 import { currencyMap } from '../../config/appConfig';
 import {
   formatCurrencyNumber,
@@ -8,6 +8,7 @@ import {
   parseNumberInput,
 } from '../../lib/numberFormat';
 import type { CurrencyCode, DcaInput } from '../../features/dca/types';
+import { SUPPORTED_CURRENCIES } from '../../features/dca/types';
 
 interface DcaFormProps {
   input: DcaInput;
@@ -53,6 +54,27 @@ const DcaForm = ({
   canSave,
 }: DcaFormProps) => {
   const currency = input.currency ?? 'KRW';
+  const currencyOptions = SUPPORTED_CURRENCIES.map((code) => currencyMap[code].code);
+  const currencyIndex = SUPPORTED_CURRENCIES.findIndex((code) => code === currency);
+
+  const handleCurrencyChange = (idx: number) => {
+    const next = SUPPORTED_CURRENCIES[idx] ?? currency;
+    if (next === currency) return;
+    onChange({ currency: next });
+  };
+
+  const averagePriceLabel = (
+    <div className="field-label-row">
+      <span>현재 평균단가</span>
+      <SegmentedControl
+        size="small"
+        options={currencyOptions}
+        selectedIndex={currencyIndex >= 0 ? currencyIndex : 0}
+        onChange={handleCurrencyChange}
+      />
+    </div>
+  );
+
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
     if (!canSave) return;
@@ -92,7 +114,7 @@ const DcaForm = ({
         />
         <TextField
           variant="box"
-          label="현재 평균단가"
+          label={averagePriceLabel}
           type="text"
           inputMode="decimal"
           value={formatNumberInput(input.currentAvgPrice)}

@@ -1,15 +1,13 @@
-import { normalizeCurrencyInput, roundHalfUp } from '../../lib/numberFormat';
-import type { AdditionalLot, CurrencyCode, DcaInput, DcaResult } from './types';
+import type { AdditionalLot, DcaInput, DcaResult } from './types';
 
 const isPositiveNumber = (value: number | null): value is number =>
   value !== null && Number.isFinite(value) && value > 0;
 
-const sumLots = (lots: AdditionalLot[], currency: CurrencyCode) => {
+const sumLots = (lots: AdditionalLot[]) => {
   return lots.reduce(
     (acc, lot) => {
-      const price = normalizeCurrencyInput(lot.price, currency);
-      if (!isPositiveNumber(price) || !isPositiveNumber(lot.quantity)) return acc;
-      const cost = price * lot.quantity;
+      if (!isPositiveNumber(lot.price) || !isPositiveNumber(lot.quantity)) return acc;
+      const cost = lot.price * lot.quantity;
       return {
         quantity: acc.quantity + lot.quantity,
         cost: acc.cost + cost,
@@ -20,19 +18,17 @@ const sumLots = (lots: AdditionalLot[], currency: CurrencyCode) => {
 };
 
 export const calculateDca = (input: DcaInput): DcaResult | null => {
-  const { currentAvgPrice, currentQuantity, additionalLots, currency } = input;
-  const normalizedCurrentAvgPrice = normalizeCurrencyInput(currentAvgPrice, currency);
-
-  if (!isPositiveNumber(normalizedCurrentAvgPrice) || !isPositiveNumber(currentQuantity)) {
+  const { currentAvgPrice, currentQuantity, additionalLots } = input;
+  if (!isPositiveNumber(currentAvgPrice) || !isPositiveNumber(currentQuantity)) {
     return null;
   }
 
-  const currentTotalCost = normalizedCurrentAvgPrice * currentQuantity;
-  const { cost: additionalTotalCost, quantity: additionalQuantity } = sumLots(additionalLots, currency);
+  const currentTotalCost = currentAvgPrice * currentQuantity;
+  const { cost: additionalTotalCost, quantity: additionalQuantity } = sumLots(additionalLots);
 
   if (additionalQuantity <= 0 || additionalTotalCost <= 0) {
     return {
-      finalAvgPrice: normalizedCurrentAvgPrice,
+      finalAvgPrice: currentAvgPrice,
       finalQuantity: currentQuantity,
       currentTotalCost,
       additionalTotalCost: 0,
@@ -47,25 +43,13 @@ export const calculateDca = (input: DcaInput): DcaResult | null => {
   const additionalAvgPrice = additionalTotalCost / additionalQuantity;
   const additionalReturn = (additionalAvgPrice - finalAvgPrice) / finalAvgPrice;
 
-  const rounded = currency === 'USD'
-    ? {
-        finalAvgPrice: roundHalfUp(finalAvgPrice, 2),
-        finalQuantity,
-        currentTotalCost: roundHalfUp(currentTotalCost, 2),
-        additionalTotalCost: roundHalfUp(additionalTotalCost, 2),
-        additionalQuantity,
-        additionalAvgPrice: roundHalfUp(additionalAvgPrice, 2),
-        additionalReturn,
-      }
-    : {
-        finalAvgPrice,
-        finalQuantity,
-        currentTotalCost,
-        additionalTotalCost,
-        additionalQuantity,
-        additionalAvgPrice,
-        additionalReturn,
-      };
-
-  return rounded;
+  return {
+    finalAvgPrice,
+    finalQuantity,
+    currentTotalCost,
+    additionalTotalCost,
+    additionalQuantity,
+    additionalAvgPrice,
+    additionalReturn,
+  };
 };

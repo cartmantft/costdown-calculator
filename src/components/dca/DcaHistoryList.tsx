@@ -57,9 +57,6 @@ const DcaHistoryList = ({ history, onSelect, onDelete }: DcaHistoryListProps) =>
               >
                 <div className="history-row">
                   <div className="history-title">
-                    <Badge size="small" variant="line" color="gray">
-                      {item.currency}
-                    </Badge>
                     {item.input.symbol || '이름 없는 종목'}
                   </div>
                   <TextButton

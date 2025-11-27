@@ -1,8 +1,13 @@
 import { FormEvent, ChangeEvent } from 'react';
 import { ListHeader, TextButton, TextField } from '@toss/tds-mobile';
-import { appConfig } from '../../config/appConfig';
-import { formatNumber, formatNumberInput, parseNumberInput } from '../../lib/numberFormat';
-import type { DcaInput } from '../../features/dca/types';
+import { currencyMap } from '../../config/appConfig';
+import {
+  formatCurrencyNumber,
+  formatNumberInput,
+  normalizeCurrencyInput,
+  parseNumberInput,
+} from '../../lib/numberFormat';
+import type { CurrencyCode, DcaInput } from '../../features/dca/types';
 
 interface DcaFormProps {
   input: DcaInput;
@@ -14,22 +19,28 @@ interface DcaFormProps {
   canSave: boolean;
 }
 
+const shouldRoundForCurrency = (key: keyof DcaInput | 'price' | 'quantity') =>
+  key === 'currentAvgPrice' || key === 'price';
+
 const numberInput =
-  (key: keyof DcaInput, onChange: DcaFormProps['onChange']) =>
+  (key: keyof DcaInput, onChange: DcaFormProps['onChange'], currency: CurrencyCode) =>
   (event: ChangeEvent<HTMLInputElement>) => {
     const nextValue = parseNumberInput(event.target.value);
-    onChange({ [key]: nextValue });
+    const normalized = shouldRoundForCurrency(key) ? normalizeCurrencyInput(nextValue, currency) : nextValue;
+    onChange({ [key]: normalized });
   };
 
 const lotInput =
   (
     index: number,
     key: 'price' | 'quantity',
-    onChange: DcaFormProps['onChangeLot']
+    onChange: DcaFormProps['onChangeLot'],
+    currency: CurrencyCode
   ) =>
   (event: ChangeEvent<HTMLInputElement>) => {
     const nextValue = parseNumberInput(event.target.value);
-    onChange(index, { [key]: nextValue });
+    const normalized = shouldRoundForCurrency(key) ? normalizeCurrencyInput(nextValue, currency) : nextValue;
+    onChange(index, { [key]: normalized });
   };
 
 const DcaForm = ({
@@ -41,6 +52,7 @@ const DcaForm = ({
   onSave,
   canSave,
 }: DcaFormProps) => {
+  const currency = input.currency ?? 'KRW';
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
     if (!canSave) return;
@@ -51,7 +63,7 @@ const DcaForm = ({
     input.currentAvgPrice !== null && input.currentQuantity !== null
       ? input.currentAvgPrice * input.currentQuantity
       : null;
-  const currencySymbol = appConfig.currencySymbol;
+  const currencySymbol = currencyMap[currency]?.symbol ?? currency;
 
   return (
     <form className="form-grid" onSubmit={handleSubmit}>
@@ -79,26 +91,26 @@ const DcaForm = ({
           onChange={(event) => onChange({ symbol: event.target.value })}
         />
         <TextField
-        variant="box"
-        label="현재 평균단가"
-        type="text"
-        inputMode="decimal"
-        value={formatNumberInput(input.currentAvgPrice)}
-        suffix={currencySymbol}
-        onChange={numberInput('currentAvgPrice', onChange)}
-      />
-      <TextField
-        variant="box"
-        label="보유 수량"
-        type="text"
-        inputMode="decimal"
-        value={formatNumberInput(input.currentQuantity)}
-        onChange={numberInput('currentQuantity', onChange)}
-      />
+          variant="box"
+          label="현재 평균단가"
+          type="text"
+          inputMode="decimal"
+          value={formatNumberInput(input.currentAvgPrice)}
+          suffix={currencySymbol}
+          onChange={numberInput('currentAvgPrice', onChange, currency)}
+        />
+        <TextField
+          variant="box"
+          label="보유 수량"
+          type="text"
+          inputMode="decimal"
+          value={formatNumberInput(input.currentQuantity)}
+          onChange={numberInput('currentQuantity', onChange, currency)}
+        />
         <TextField
           variant="box"
           label="현재 보유 총액"
-          value={`${formatNumber(currentTotal)} ${currencySymbol}`}
+          value={`${formatCurrencyNumber(currentTotal, currency)} ${currencySymbol}`}
           readOnly
           disabled
         />
@@ -159,7 +171,7 @@ const DcaForm = ({
               inputMode="decimal"
               value={formatNumberInput(lot.price)}
               suffix={currencySymbol}
-              onChange={lotInput(index, 'price', onChangeLot)}
+              onChange={lotInput(index, 'price', onChangeLot, currency)}
             />
             <TextField
               variant="box"
@@ -167,12 +179,12 @@ const DcaForm = ({
               type="text"
               inputMode="decimal"
               value={formatNumberInput(lot.quantity)}
-              onChange={lotInput(index, 'quantity', onChangeLot)}
+              onChange={lotInput(index, 'quantity', onChangeLot, currency)}
             />
             <TextField
               variant="box"
               label="추가 총액"
-              value={`${formatNumber(lotTotal)} ${currencySymbol}`}
+              value={`${formatCurrencyNumber(lotTotal, currency)} ${currencySymbol}`}
               readOnly
               disabled
             />

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Badge, Button, ConfirmDialog, TextButton } from '@toss/tds-mobile';
-import { appConfig } from '../../config/appConfig';
-import { formatNumber, formatPercent } from '../../lib/numberFormat';
+import { currencyMap } from '../../config/appConfig';
+import { formatCurrencyNumber, formatPercent } from '../../lib/numberFormat';
 import type { DcaHistoryItem } from '../../features/dca/types';
 
 interface DcaHistoryListProps {
@@ -12,7 +12,6 @@ interface DcaHistoryListProps {
 
 const DcaHistoryList = ({ history, onSelect, onDelete }: DcaHistoryListProps) => {
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
-  const currencySymbol = appConfig.currencySymbol;
 
   const handleDeleteClick = (id: string, event: React.MouseEvent) => {
     event.stopPropagation();
@@ -41,6 +40,7 @@ const DcaHistoryList = ({ history, onSelect, onDelete }: DcaHistoryListProps) =>
         {history.map((item) => {
           const isGain = item.result.additionalReturn > 0;
           const badgeColor = isGain ? 'red' : 'blue';
+          const currencySymbol = currencyMap[item.currency]?.symbol ?? item.currency;
           return (
             <li key={item.id} className="history-item">
               <div
@@ -56,7 +56,12 @@ const DcaHistoryList = ({ history, onSelect, onDelete }: DcaHistoryListProps) =>
                 }}
               >
                 <div className="history-row">
-                  <div className="history-title">{item.input.symbol || '이름 없는 종목'}</div>
+                  <div className="history-title">
+                    <Badge size="small" variant="line" color="gray">
+                      {item.currency}
+                    </Badge>
+                    {item.input.symbol || '이름 없는 종목'}
+                  </div>
                   <TextButton
                     size="small"
                     variant="arrow"
@@ -70,16 +75,16 @@ const DcaHistoryList = ({ history, onSelect, onDelete }: DcaHistoryListProps) =>
                 </div>
                 <div className="history-row price-row">
                   <div className="history-price">
-                    {formatNumber(item.result.finalAvgPrice)} {currencySymbol}
+                    {formatCurrencyNumber(item.result.finalAvgPrice, item.currency)} {currencySymbol}
                   </div>
                   <Badge size="small" variant="fill" color={badgeColor}>
                     {formatPercent(item.result.additionalReturn)}
                   </Badge>
                 </div>
                 <div className="history-stats">
-                  <span>총 수량 {formatNumber(item.result.finalQuantity)}주</span>
+                  <span>총 수량 {formatCurrencyNumber(item.result.finalQuantity, item.currency)}주</span>
                   <span>
-                    총 금액 {formatNumber(item.result.additionalTotalCost)} {currencySymbol}
+                    총 금액 {formatCurrencyNumber(item.result.additionalTotalCost, item.currency)} {currencySymbol}
                   </span>
                 </div>
               </div>

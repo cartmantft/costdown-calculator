@@ -102,14 +102,17 @@ input {
   gap: 12px;
 }
 
-.currency-field {
-  display: grid;
-  gap: 8px;
-}
-
 .currency-selector {
   display: inline-flex;
   gap: 8px;
+}
+
+.currency-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .currency-chip {

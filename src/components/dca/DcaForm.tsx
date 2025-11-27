@@ -57,6 +57,24 @@ const DcaForm = ({
     input.currentAvgPrice !== null && input.currentQuantity !== null
       ? input.currentAvgPrice * input.currentQuantity
       : null;
+  const currencyLabel = (
+    <div className="currency-label">
+      <span>현재 평균단가</span>
+      <div className="currency-selector" aria-label="통화 선택">
+        {currencyOptions.map((option) => (
+          <button
+            type="button"
+            key={option.code}
+            className={`currency-chip ${option.code === currencyCode ? 'is-active' : ''}`}
+            onClick={() => onChangeCurrency(option.code)}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
   return (
     <form className="form-grid" onSubmit={handleSubmit}>
       <ListHeader
@@ -82,29 +100,15 @@ const DcaForm = ({
           value={input.symbol}
           onChange={(event) => onChange({ symbol: event.target.value })}
         />
-        <div className="currency-field">
-          <div className="currency-selector" aria-label="통화 선택">
-            {currencyOptions.map((option) => (
-              <button
-                type="button"
-                key={option.code}
-                className={`currency-chip ${option.code === currencyCode ? 'is-active' : ''}`}
-                onClick={() => onChangeCurrency(option.code)}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-          <TextField
-            variant="box"
-            label="현재 평균단가"
-            type="text"
-            inputMode="decimal"
-            value={formatNumberInput(input.currentAvgPrice)}
-            suffix={currencySymbol}
-            onChange={numberInput('currentAvgPrice', onChange)}
-          />
-        </div>
+        <TextField
+          variant="box"
+          label={currencyLabel}
+          type="text"
+          inputMode="decimal"
+          value={formatNumberInput(input.currentAvgPrice)}
+          suffix={currencySymbol}
+          onChange={numberInput('currentAvgPrice', onChange)}
+        />
         <TextField
           variant="box"
           label="보유 수량"

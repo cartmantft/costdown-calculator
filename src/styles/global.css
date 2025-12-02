@@ -187,6 +187,11 @@ input {
   color: var(--adaptiveBlue500, #3182f6);
 }
 
+.empty-center {
+  text-align: center;
+  margin: 24px 0;
+}
+
 .lot-row-header {
   display: flex;
   justify-content: space-between;

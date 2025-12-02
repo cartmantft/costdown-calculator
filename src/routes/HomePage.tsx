@@ -3,6 +3,7 @@ import { BottomCTA, Button, ListHeader, Toast } from '@toss/tds-mobile';
 import DcaForm from '../components/dca/DcaForm';
 import DcaHistoryList from '../components/dca/DcaHistoryList';
 import DcaResult from '../components/dca/DcaResult';
+import BrandBar from '../components/common/BrandBar';
 import { useDcaCalculator } from '../features/dca/hooks';
 
 type View = 'list' | 'detail';
@@ -69,6 +70,7 @@ const HomePage = () => {
   if (view === 'list') {
     return (
       <>
+        <BrandBar variant="bridge" />
         <div className="single-column">
           <ListHeader
             title={
@@ -107,6 +109,7 @@ const HomePage = () => {
 
   return (
     <>
+      <BrandBar variant="bridge" />
       <div className="page-grid has-bottom-cta">
         <section className="card">
           <DcaForm

@@ -27,7 +27,7 @@ const DcaHistoryList = ({ history, onSelect, onDelete }: DcaHistoryListProps) =>
   };
 
   if (!history.length) {
-    return <p className="muted">계산 기록이 없습니다.</p>;
+    return <p className="muted">계산 기록이 없습니다. 삭제한 기록은 다시 나타나지 않아요.</p>;
   }
 
   const pendingDeleteItem = pendingDeleteId

@@ -48,9 +48,9 @@ const DcaForm = ({
   }, [input.currentAvgPrice]);
 
   useEffect(() => {
-    const next = input.additionalLots.map((lot, index) => ({
-      price: lotInputs[index]?.price ?? formatNumberInput(lot.price),
-      quantity: lotInputs[index]?.quantity ?? formatNumberInput(lot.quantity),
+    const next = input.additionalLots.map((lot) => ({
+      price: formatNumberInput(lot.price),
+      quantity: formatNumberInput(lot.quantity),
     }));
     const sameLength = next.length === lotInputs.length;
     const sameValues =
@@ -98,9 +98,6 @@ const DcaForm = ({
       const sanitized = raw.replace(/,/g, '').trim();
       if (sanitized === '') {
         onChangeLot(index, { [key]: null });
-        return;
-      }
-      if (key === 'price' && exceedsDecimals(sanitized, 2)) {
         return;
       }
       const parsed = Number(sanitized);

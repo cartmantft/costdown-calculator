@@ -35,7 +35,13 @@ const parseHistory = (raw: string | null): DcaHistoryItem[] => {
   try {
     const parsed = JSON.parse(raw) as DcaHistoryItem[];
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter(isValidHistoryItem).map(normalizeCurrency);
+    return parsed
+      .filter(isValidHistoryItem)
+      .map(normalizeCurrency)
+      .map((item) => ({
+        ...item,
+        updatedAt: item.updatedAt ?? item.createdAt,
+      }));
   } catch {
     return [];
   }
@@ -95,10 +101,7 @@ export const updateHistory = (id: string, input: DcaInput, result: DcaResult | n
 };
 
 export const removeHistory = (id: string): DcaHistoryItem[] => {
-  const timestamp = new Date().toISOString();
-  const next = loadHistory()
-    .filter((item) => item.id !== id)
-    .map((item) => ({ ...item, updatedAt: item.updatedAt ?? timestamp }));
+  const next = loadHistory().filter((item) => item.id !== id);
   persistHistory(next);
   return next;
 };

@@ -56,13 +56,14 @@ const parseNumber = (value: string | undefined, fallback: number): number => {
 
 const devHost = env.DEV_SERVER_HOST || env.VITE_DEV_HOST || '0.0.0.0';
 const devPort = parseNumber(env.DEV_SERVER_PORT || env.VITE_DEV_PORT || env.PORT, 5173);
+const brandIcon = env.VITE_BRAND_LOGO_URL?.trim() || 'https://github.com/cartmantft/costdown-calculator/blob/main/src/assets/logo.png?raw=true';
 
 export default defineConfig({
   appName: 'costdown-calculator',
   brand: {
     displayName: '물타기 계산기',
     primaryColor: '#3182F6',
-    icon: '',
+    icon: brandIcon,
     bridgeColorMode: 'basic',
   },
   web: {

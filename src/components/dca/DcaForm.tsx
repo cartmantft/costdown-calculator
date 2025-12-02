@@ -206,7 +206,10 @@ const DcaForm = ({
               arrowPlacement="inline"
               color="primary"
               className="text-primary"
-              onClick={onAddLot}
+              onClick={(event) => {
+                event.preventDefault();
+                onAddLot();
+              }}
               type="button"
             >
               행 추가
@@ -229,7 +232,11 @@ const DcaForm = ({
                 arrowPlacement="inline"
                 className="text-danger"
                 color="danger"
-                onClick={() => onRemoveLot(index)}
+                onClick={(event) => {
+                  event.preventDefault();
+                  onRemoveLot(index);
+                }}
+                type="button"
               >
                 삭제
               </TextButton>

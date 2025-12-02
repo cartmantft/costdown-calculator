@@ -41,6 +41,7 @@ const DcaHistoryList = ({ history, onSelect, onDelete }: DcaHistoryListProps) =>
           const isGain = item.result.additionalReturn > 0;
           const badgeColor = isGain ? 'red' : 'blue';
           const currencySymbol = currencyMap[item.currency]?.symbol ?? item.currency;
+          const totalCost = item.result.currentTotalCost + item.result.additionalTotalCost;
           return (
             <li key={item.id} className="history-item">
               <div
@@ -81,8 +82,7 @@ const DcaHistoryList = ({ history, onSelect, onDelete }: DcaHistoryListProps) =>
                 <div className="history-stats">
                   <span>총 수량 {formatCurrencyNumber(item.result.finalQuantity, item.currency)}주</span>
                   <span>
-                    총 금액 {formatCurrencyNumber(item.result.additionalTotalCost, item.currency)}{' '}
-                    {currencySymbol}
+                    총 금액 {formatCurrencyNumber(totalCost, item.currency)} {currencySymbol}
                   </span>
                 </div>
               </div>

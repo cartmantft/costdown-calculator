@@ -1,17 +1,13 @@
 import { useState } from 'react';
 import { BRAND_COLOR, BRAND_LOGO_SRC, BRAND_NAME, BRAND_TAGLINE } from './brand';
 
-interface BrandBarProps {
-  variant?: 'bridge' | 'nav';
-}
-
-const BrandBar = ({ variant = 'bridge' }: BrandBarProps) => {
+const BrandHero = () => {
   const [logoError, setLogoError] = useState(false);
   const showLogo = !logoError;
 
   return (
-    <div className={`brand-bar brand-bar-${variant}`}>
-      <div className="brand-icon" style={{ backgroundColor: BRAND_COLOR }}>
+    <div className="brand-hero">
+      <div className="brand-hero-icon" style={{ backgroundColor: `${BRAND_COLOR}1a` }}>
         {showLogo ? (
           <img
             src={BRAND_LOGO_SRC}
@@ -23,12 +19,13 @@ const BrandBar = ({ variant = 'bridge' }: BrandBarProps) => {
           <span aria-hidden="true">{BRAND_NAME.charAt(0)}</span>
         )}
       </div>
-      <div className="brand-meta">
-        <div className="brand-name">{BRAND_NAME}</div>
-        {variant === 'bridge' && <div className="brand-tagline">{BRAND_TAGLINE}</div>}
+      <div className="brand-hero-text">
+        <div className="brand-hero-title">{BRAND_NAME}</div>
+        <div className="brand-hero-sub">물타기 계산기로 이동했어요</div>
+        <div className="brand-hero-tagline">{BRAND_TAGLINE}</div>
       </div>
     </div>
   );
 };
 
-export default BrandBar;
+export default BrandHero;

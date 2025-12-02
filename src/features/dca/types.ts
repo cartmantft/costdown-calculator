@@ -10,7 +10,7 @@ export interface DcaInput {
   symbol: string;
   currentAvgPrice: number | null;
   currentQuantity: number | null;
-  additionalLots: AdditionalLot[];
+  additionalLots: AdditionalLot[]; // 최대 5개까지 허용
   currency: CurrencyCode;
 }
 
@@ -30,4 +30,5 @@ export interface DcaHistoryItem {
   input: DcaInput;
   result: DcaResult;
   createdAt: string;
+  updatedAt?: string;
 }

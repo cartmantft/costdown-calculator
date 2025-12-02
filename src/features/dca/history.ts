@@ -2,9 +2,9 @@ import { appConfig } from '../../config/appConfig';
 import { readItem, storageKeys, writeItem } from '../../lib/localStorage';
 import type { CurrencyCode, DcaHistoryItem, DcaInput, DcaResult } from './types';
 
-const HISTORY_STORAGE_KEY = storageKeys.history;
+const HISTORY_STORAGE_KEY = storageKeys.history; // 단일 스토리지 키
 const LEGACY_HISTORY_KEY = 'dca-history';
-const HISTORY_LIMIT = appConfig.historyLimit ?? 10;
+const HISTORY_LIMIT = appConfig.historyLimit ?? 10; // 단일 소스 limit
 
 const isValidNumber = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
 
@@ -35,15 +35,26 @@ const parseHistory = (raw: string | null): DcaHistoryItem[] => {
   try {
     const parsed = JSON.parse(raw) as DcaHistoryItem[];
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter(isValidHistoryItem).map(normalizeCurrency);
+    return parsed
+      .filter(isValidHistoryItem)
+      .map(normalizeCurrency)
+      .map((item) => ({
+        ...item,
+        updatedAt: item.updatedAt ?? item.createdAt,
+      }));
   } catch {
     return [];
   }
 };
 
-export const loadHistory = (): DcaHistoryItem[] => {
+export const loadHistoryWithMeta = (): { history: DcaHistoryItem[]; hasPersisted: boolean } => {
   const raw = readItem(HISTORY_STORAGE_KEY) ?? readItem(LEGACY_HISTORY_KEY);
-  return parseHistory(raw);
+  if (raw === null) return { history: [], hasPersisted: false };
+  return { history: parseHistory(raw), hasPersisted: true };
+};
+
+export const loadHistory = (): DcaHistoryItem[] => {
+  return loadHistoryWithMeta().history;
 };
 
 export const persistHistory = (history: DcaHistoryItem[]): void => {
@@ -56,6 +67,7 @@ const createEntry = (input: DcaInput, result: DcaResult): DcaHistoryItem => ({
   input,
   result,
   createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
 });
 
 export const addHistory = (input: DcaInput, result: DcaResult | null): DcaHistoryItem[] => {
@@ -71,16 +83,18 @@ export const updateHistory = (id: string, input: DcaInput, result: DcaResult | n
   const hasTarget = history.some((item) => item.id === id);
 
   if (!hasTarget) {
+    const timestamp = new Date().toISOString();
     const next = [
-      { id, currency: input.currency, input, result, createdAt: new Date().toISOString() },
+      { id, currency: input.currency, input, result, createdAt: timestamp, updatedAt: timestamp },
       ...history,
     ].slice(0, HISTORY_LIMIT);
     persistHistory(next);
     return next;
   }
 
+  const timestamp = new Date().toISOString();
   const next = history.map((item) =>
-    item.id === id ? { ...item, currency: input.currency, input, result } : item
+    item.id === id ? { ...item, currency: input.currency, input, result, updatedAt: timestamp } : item
   );
   persistHistory(next);
   return next;

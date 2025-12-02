@@ -27,7 +27,7 @@ const DcaHistoryList = ({ history, onSelect, onDelete }: DcaHistoryListProps) =>
   };
 
   if (!history.length) {
-    return <p className="muted">계산 기록이 없습니다.</p>;
+    return <p className="muted empty-center">계산 기록이 없습니다.</p>;
   }
 
   const pendingDeleteItem = pendingDeleteId
@@ -57,9 +57,6 @@ const DcaHistoryList = ({ history, onSelect, onDelete }: DcaHistoryListProps) =>
               >
                 <div className="history-row">
                   <div className="history-title">
-                    <Badge size="small" variant="line" color="gray">
-                      {item.currency}
-                    </Badge>
                     {item.input.symbol || '이름 없는 종목'}
                   </div>
                   <TextButton

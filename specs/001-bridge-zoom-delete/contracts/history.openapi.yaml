@@ -1,0 +1,107 @@
+openapi: 3.0.3
+info:
+  title: Miniapp History & Branding Contracts
+  version: 1.0.0
+servers:
+  - url: local-storage
+    description: Local persistence boundary (logical contract)
+paths:
+  /history:
+    get:
+      summary: Load calculation history
+      responses:
+        '200':
+          description: Current history list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoryList'
+    post:
+      summary: Save full calculation history (overwrite)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HistoryList'
+      responses:
+        '204':
+          description: Saved
+  /history/{id}:
+    delete:
+      summary: Delete a calculation entry
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Deleted locally
+        '404':
+          description: Entry not found
+components:
+  schemas:
+    HistoryList:
+      type: object
+      required: [entries, updatedAt, version]
+      properties:
+        entries:
+          type: array
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/CalculationEntry'
+        updatedAt:
+          type: string
+          format: date-time
+        version:
+          type: integer
+          minimum: 1
+    CalculationEntry:
+      type: object
+      required:
+        - id
+        - symbol
+        - title
+        - amount
+        - currencySymbol
+        - currencyCode
+        - scheduleType
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+        symbol:
+          type: string
+        title:
+          type: string
+        amount:
+          type: number
+        currencySymbol:
+          type: string
+        currencyCode:
+          type: string
+        scheduleType:
+          type: string
+          enum: [dca, lump-sum]
+        lots:
+          type: array
+          maxItems: 5
+          items:
+            type: object
+            required: [date, amount]
+            properties:
+              date:
+                type: string
+                format: date
+              amount:
+                type: number
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+  responses: {}

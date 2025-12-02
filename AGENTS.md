@@ -39,9 +39,9 @@
 - Before opening a PR, run `npm run lint`, ensure builds succeed, and attach screenshots/GIFs for UI-visible changes. Link related issues and call out config/env updates explicitly. Keep PR descriptions short but actionable: what changed, why, and how to verify.
 
 ## Recent Changes
+- 001-bridge-zoom-delete: Added TypeScript 5.9, React 18 + Vite 7 (Granite wrapper), @toss/tds-mobile 2.1.2, @apps-in-toss/web-framework 1.5.0, @emotion/react 11.x
+- 001-inline-currency-toggle: Added TypeScript 5.9, React 18 + Vite 7 (Granite wrapper), @toss/tds-mobile 2.1.2, @apps-in-toss/web-framework 1.5.0, @emotion/react 11.x
 - 001-add-usd-currency: Added TypeScript 5.9, React 18, Vite 7 (Granite dev wrapper) + @toss/tds-mobile 2.1.2, @apps-in-toss/web-framework 1.5.0, @emotion/react 11.x, @vitejs/plugin-react, eslint, typescrip
-- 001-add-usd-currency: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 
 ## Active Technologies
-- TypeScript 5.9, React 18, Vite 7 (Granite dev wrapper) + @toss/tds-mobile 2.1.2, @apps-in-toss/web-framework 1.5.0, @emotion/react 11.x, @vitejs/plugin-react, eslint, typescrip (001-add-usd-currency)
-- Browser localStorage (`dca:lastCurrency`, `dca:history` capped at 10) (001-add-usd-currency)
+- Browser localStorage (히스토리, 설정) (001-bridge-zoom-delete)

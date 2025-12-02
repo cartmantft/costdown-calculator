@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { appConfig } from '../../config/appConfig';
 import { calculateDca } from './calc';
-import { addHistory, loadHistory, removeHistory, updateHistory } from './history';
-import { buildMockHistory } from './mock';
+import { addHistory, loadHistoryWithMeta, removeHistory, updateHistory } from './history';
 import type { CurrencyCode, DcaHistoryItem, DcaInput } from './types';
 import { readItem, storageKeys, writeItem } from '../../lib/localStorage';
 
@@ -24,8 +23,8 @@ export const useDcaCalculator = () => {
   const initialCurrency = getInitialCurrency() || appConfig.currencyCode;
   const [input, setInput] = useState<DcaInput>(buildDefaultInput(initialCurrency));
   const [history, setHistory] = useState<DcaHistoryItem[]>(() => {
-    const saved = loadHistory();
-    return saved.length ? saved : buildMockHistory();
+    const { history: saved } = loadHistoryWithMeta();
+    return saved;
   });
   const [selectedId, setSelectedId] = useState<string | null>(null);
 

@@ -1,5 +1,6 @@
 const isBrowser = typeof window !== 'undefined';
 
+// 단일 스토리지 키 소스: 히스토리/통화 저장 시 여기를 기준으로 사용한다.
 export const storageKeys = {
   history: 'dca:history',
   lastCurrency: 'dca:lastCurrency',

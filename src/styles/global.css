@@ -102,6 +102,27 @@ input {
   gap: 12px;
 }
 
+.field-group-item {
+  display: grid;
+  gap: 6px;
+}
+
+.field-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+  width: 100%;
+  padding-inline: 12px;
+}
+
+.field-inline-label {
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
 .currency-selector {
   display: inline-flex;
   gap: 8px;
@@ -164,6 +185,11 @@ input {
 
 .text-primary {
   color: var(--adaptiveBlue500, #3182f6);
+}
+
+.empty-center {
+  text-align: center;
+  margin: 24px 0;
 }
 
 .lot-row-header {

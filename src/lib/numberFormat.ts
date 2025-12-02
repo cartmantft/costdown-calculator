@@ -3,8 +3,6 @@ import type { CurrencyCode } from '../features/dca/types';
 const isFiniteNumber = (value: number | null | undefined): value is number =>
   value !== null && value !== undefined && Number.isFinite(value);
 
-const USD_DECIMALS = 2;
-
 export const formatNumber = (
   value: number | null | undefined,
   options: Intl.NumberFormatOptions = { maximumFractionDigits: 2 }
@@ -35,16 +33,10 @@ export const formatNumberInput = (value: number | null | undefined) => {
   return Number.isFinite(value) ? value.toLocaleString() : '';
 };
 
-export const roundHalfUp = (value: number, decimals: number = USD_DECIMALS) => {
+export const roundHalfUp = (value: number, decimals: number = 2) => {
   if (!Number.isFinite(value)) return value;
   const factor = 10 ** decimals;
   return Math.round(value * factor) / factor;
-};
-
-export const normalizeCurrencyInput = (value: number | null, currency: CurrencyCode) => {
-  if (!isFiniteNumber(value)) return value;
-  if (currency === 'USD') return roundHalfUp(value, USD_DECIMALS);
-  return value;
 };
 
 export const formatCurrencyNumber = (
@@ -54,7 +46,7 @@ export const formatCurrencyNumber = (
 ) => {
   const currencyOptions =
     currency === 'USD'
-      ? { minimumFractionDigits: USD_DECIMALS, maximumFractionDigits: USD_DECIMALS }
+      ? { minimumFractionDigits: 2, maximumFractionDigits: 2 }
       : { maximumFractionDigits: 2 };
   return formatNumber(value, { ...currencyOptions, ...options });
 };

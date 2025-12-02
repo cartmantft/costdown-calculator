@@ -1,13 +1,9 @@
-import { FormEvent, ChangeEvent } from 'react';
-import { ListHeader, TextButton, TextField } from '@toss/tds-mobile';
+import { FormEvent, ChangeEvent, useEffect, useState } from 'react';
+import { ListHeader, SegmentedControl, TextButton, TextField } from '@toss/tds-mobile';
 import { currencyMap } from '../../config/appConfig';
-import {
-  formatCurrencyNumber,
-  formatNumberInput,
-  normalizeCurrencyInput,
-  parseNumberInput,
-} from '../../lib/numberFormat';
-import type { CurrencyCode, DcaInput } from '../../features/dca/types';
+import { formatCurrencyNumber, formatNumberInput, parseNumberInput } from '../../lib/numberFormat';
+import type { DcaInput } from '../../features/dca/types';
+import { SUPPORTED_CURRENCIES } from '../../features/dca/types';
 
 interface DcaFormProps {
   input: DcaInput;
@@ -19,30 +15,6 @@ interface DcaFormProps {
   canSave: boolean;
 }
 
-const shouldRoundForCurrency = (key: keyof DcaInput | 'price' | 'quantity') =>
-  key === 'currentAvgPrice' || key === 'price';
-
-const numberInput =
-  (key: keyof DcaInput, onChange: DcaFormProps['onChange'], currency: CurrencyCode) =>
-  (event: ChangeEvent<HTMLInputElement>) => {
-    const nextValue = parseNumberInput(event.target.value);
-    const normalized = shouldRoundForCurrency(key) ? normalizeCurrencyInput(nextValue, currency) : nextValue;
-    onChange({ [key]: normalized });
-  };
-
-const lotInput =
-  (
-    index: number,
-    key: 'price' | 'quantity',
-    onChange: DcaFormProps['onChangeLot'],
-    currency: CurrencyCode
-  ) =>
-  (event: ChangeEvent<HTMLInputElement>) => {
-    const nextValue = parseNumberInput(event.target.value);
-    const normalized = shouldRoundForCurrency(key) ? normalizeCurrencyInput(nextValue, currency) : nextValue;
-    onChange(index, { [key]: normalized });
-  };
-
 const DcaForm = ({
   input,
   onChange,
@@ -53,6 +25,86 @@ const DcaForm = ({
   canSave,
 }: DcaFormProps) => {
   const currency = input.currency ?? 'KRW';
+  const [avgPriceInput, setAvgPriceInput] = useState(formatNumberInput(input.currentAvgPrice));
+  const [lotInputs, setLotInputs] = useState(
+    input.additionalLots.map((lot) => ({
+      price: formatNumberInput(lot.price),
+      quantity: formatNumberInput(lot.quantity),
+    }))
+  );
+  const handleCurrencyChange = (value: string) => {
+    const next = value === 'USD' ? 'USD' : 'KRW';
+    if (next === currency) return;
+    onChange({ currency: next });
+  };
+
+  const avgPriceInputId = 'avg-price-input';
+
+  useEffect(() => {
+    const next = formatNumberInput(input.currentAvgPrice);
+    if (next === avgPriceInput) return;
+    setAvgPriceInput(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [input.currentAvgPrice]);
+
+  useEffect(() => {
+    const next = input.additionalLots.map((lot) => ({
+      price: formatNumberInput(lot.price),
+      quantity: formatNumberInput(lot.quantity),
+    }));
+    const sameLength = next.length === lotInputs.length;
+    const sameValues =
+      sameLength &&
+      next.every(
+        (entry, idx) =>
+          entry.price === lotInputs[idx]?.price && entry.quantity === lotInputs[idx]?.quantity
+      );
+    if (sameValues) return;
+    setLotInputs(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [input.additionalLots]);
+
+  const exceedsDecimals = (raw: string, max: number) => {
+    const match = raw.replace(/,/g, '').match(/^-?\d*(?:\.(\d*))?$/);
+    if (!match) return true;
+    const decimals = match[1] ?? '';
+    return decimals.length > max;
+  };
+
+  const handleAvgPriceChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const raw = event.target.value;
+    if (exceedsDecimals(raw, 2)) return;
+    setAvgPriceInput(raw);
+    const sanitized = raw.replace(/,/g, '').trim();
+    if (sanitized === '') {
+      onChange({ currentAvgPrice: null });
+      return;
+    }
+    const parsed = Number(sanitized);
+    if (!Number.isFinite(parsed)) return;
+    onChange({ currentAvgPrice: parsed });
+  };
+
+  const handleLotInputChange =
+    (index: number, key: 'price' | 'quantity') => (event: ChangeEvent<HTMLInputElement>) => {
+      const raw = event.target.value;
+      if (key === 'price' && exceedsDecimals(raw, 2)) return;
+      setLotInputs((prev) => {
+        const next = [...prev];
+        next[index] = { ...next[index], [key]: raw };
+        return next;
+      });
+
+      const sanitized = raw.replace(/,/g, '').trim();
+      if (sanitized === '') {
+        onChangeLot(index, { [key]: null });
+        return;
+      }
+      const parsed = Number(sanitized);
+      if (!Number.isFinite(parsed)) return;
+      onChangeLot(index, { [key]: parsed });
+    };
+
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
     if (!canSave) return;
@@ -90,27 +142,45 @@ const DcaForm = ({
           value={input.symbol}
           onChange={(event) => onChange({ symbol: event.target.value })}
         />
+        <div className="field-group-item">
+          <div className="field-label-row">
+            <label className="field-inline-label" htmlFor={avgPriceInputId}>
+              현재 평균단가
+            </label>
+            <SegmentedControl
+              size="small"
+              value={currency}
+              onChange={handleCurrencyChange}
+            >
+              {SUPPORTED_CURRENCIES.map((code) => (
+                <SegmentedControl.Item key={code} value={code}>
+                  {currencyMap[code].code}
+                </SegmentedControl.Item>
+              ))}
+            </SegmentedControl>
+          </div>
         <TextField
           variant="box"
-          label="현재 평균단가"
+          id={avgPriceInputId}
           type="text"
           inputMode="decimal"
-          value={formatNumberInput(input.currentAvgPrice)}
+          value={avgPriceInput}
           suffix={currencySymbol}
-          onChange={numberInput('currentAvgPrice', onChange, currency)}
+          onChange={handleAvgPriceChange}
         />
-        <TextField
-          variant="box"
-          label="보유 수량"
-          type="text"
-          inputMode="decimal"
-          value={formatNumberInput(input.currentQuantity)}
-          onChange={numberInput('currentQuantity', onChange, currency)}
-        />
-        <TextField
-          variant="box"
-          label="현재 보유 총액"
-          value={`${formatCurrencyNumber(currentTotal, currency)} ${currencySymbol}`}
+      </div>
+      <TextField
+        variant="box"
+        label="보유 수량"
+        type="text"
+        inputMode="decimal"
+        value={formatNumberInput(input.currentQuantity)}
+        onChange={(event) => onChange({ currentQuantity: parseNumberInput(event.target.value) })}
+      />
+      <TextField
+        variant="box"
+        label="현재 보유 총액"
+        value={`${formatCurrencyNumber(currentTotal, currency)} ${currencySymbol}`}
           readOnly
           disabled
         />
@@ -169,17 +239,17 @@ const DcaForm = ({
               label="추가 단가"
               type="text"
               inputMode="decimal"
-              value={formatNumberInput(lot.price)}
+              value={lotInputs[index]?.price ?? formatNumberInput(lot.price)}
               suffix={currencySymbol}
-              onChange={lotInput(index, 'price', onChangeLot, currency)}
+              onChange={handleLotInputChange(index, 'price')}
             />
             <TextField
               variant="box"
               label="추가 수량"
               type="text"
               inputMode="decimal"
-              value={formatNumberInput(lot.quantity)}
-              onChange={lotInput(index, 'quantity', onChangeLot, currency)}
+              value={lotInputs[index]?.quantity ?? formatNumberInput(lot.quantity)}
+              onChange={handleLotInputChange(index, 'quantity')}
             />
             <TextField
               variant="box"
